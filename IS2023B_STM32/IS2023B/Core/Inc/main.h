@@ -80,7 +80,12 @@ extern uint8_t quadrant_time_order[5];
 #define Q4_EXTI_IRQn EXTI3_IRQn
 
 /* USER CODE BEGIN Private defines */
-
+#define LENGTH 500
+#define WIDTH 500
+#define HALF_SQUARE LENGTH / 2 + 50
+#define UNIT 50
+#define V_VOICE 340
+#define CLK_FREQ  128000000
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

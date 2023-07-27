@@ -6,6 +6,7 @@
 "is2023b\usart.o"
 "is2023b\stm32f4xx_it.o"
 "is2023b\stm32f4xx_hal_msp.o"
+"is2023b\usart_hmi.o"
 "is2023b\stm32f4xx_hal_tim.o"
 "is2023b\stm32f4xx_hal_tim_ex.o"
 "is2023b\stm32f4xx_hal_rcc.o"

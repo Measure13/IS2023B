@@ -5,7 +5,6 @@
 //! give a reset signal every time a program starts!
 
 static uint8_t data_tmp_write[MAX_SEND_DATA];
-static float adc_data[MAX_DATA_NUM_FFT];
 
 void UARTHMI_Forget_It(void)
 {
@@ -209,24 +208,6 @@ void UARTHMI_Send_Text(uint8_t index, uint8_t wrong_info)
 {
     switch (wrong_info)
     {
-    case TOP_DISTORTION:
-        UARTHMI_Set_Text_Page(index, 0, "\xb6\xa5\xb2\xbf\xca\xa7\xd5\xe6");
-        break;
-    case BOTTOM_DISTORTION:
-        UARTHMI_Set_Text_Page(index, 0, "\xb5\xd7\xb2\xbf\xca\xa7\xd5\xe6");
-        break;
-    case BOTH_DISTORTION:
-        UARTHMI_Set_Text_Page(index, 0, "\xcb\xab\xcf\xf2\xca\xa7\xd5\xe6");
-        break;
-    case CO_DISTORTION:
-        UARTHMI_Set_Text_Page(index, 0, "\xbd\xbb\xd4\xbd\xca\xa7\xd5\xe6");
-        break;
-    case NO_DISTORTION:
-        UARTHMI_Set_Text_Page(index, 0, "\xce\xde\xca\xa7\xd5\xe6");
-        break;
-	case OTHER_DISTORTION:
-        UARTHMI_Set_Text_Page(index, 0, "\xc6\xe4\xcb\xfb\xca\xa7\xd5\xe6");
-        break;
     default:
         break;
     }
@@ -249,14 +230,14 @@ void UARTHMI_Send_Number(uint8_t index, int number)
     UARTHMI_Set_Number(index, number);
 }
 
-void UARTHMI_ADC_Data_Display(uint16_t *adc_data_pointer)
-{
-    for (int i = 4; i < MAX_DATA_NUM_SPC + 4; ++i)
-    {
-        adc_data[i - 4] = (float)adc_data_pointer[i];
-    }
-    UARTHMI_Draw_Curve_addt(0, adc_data, MAX_DATA_NUM_SPC, 0);
-}
+// void UARTHMI_ADC_Data_Display(uint16_t *adc_data_pointer)
+// {
+//     for (int i = 4; i < MAX_DATA_NUM_SPC + 4; ++i)
+//     {
+//         adc_data[i - 4] = (float)adc_data_pointer[i];
+//     }
+//     UARTHMI_Draw_Curve_addt(0, adc_data, MAX_DATA_NUM_SPC, 0);
+// }
 
 void UARTHMI_Reset(void)
 {

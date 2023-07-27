@@ -45,7 +45,20 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+static uint16_t total_steps = 50;
+static uint16_t steps = 15;
+static uint16_t P_skip_num = 0;
+static float MICROPHONE[4][2] = { {HALF_SQUARE, HALF_SQUARE}, 
+                                  {-HALF_SQUARE, HALF_SQUARE}, 
+                                  {-HALF_SQUARE, -HALF_SQUARE}, 
+                                  {HALF_SQUARE, -HALF_SQUARE}};
+static float POINT_DIST[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+static float CORRECT_POINT_DIST[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+static float G_VECTOR[4][2] = {{0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}};
+bool volatile first_interrupt = true;
+uint8_t volatile interrupt_times = 0;
+uint32_t quadrant_time_stamp[5] = {0, 0, 0, 0, 0};
+uint8_t quadrant_time_order[5] = {0, 0, 0, 0, 0};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -56,10 +69,7 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-bool volatile first_interrupt = true;
-uint8_t volatile interrupt_times = 0;
-uint32_t quadrant_time_stamp[5] = {0, 0, 0, 0, 0};
-uint8_t quadrant_time_order[5] = {0, 0, 0, 0, 0};
+
 /* USER CODE END 0 */
 
 /**
@@ -153,7 +163,15 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+void Gradient_descent(float pix, float piy, uint8_t step)
+{
+  //
+}
 
+void Gradient_descent_wrapper(void)
+{
+  //
+}
 /* USER CODE END 4 */
 
 /**
@@ -167,6 +185,7 @@ void Error_Handler(void)
   __disable_irq();
   while (1)
   {
+    printf("Error_Handler\r\n");
   }
   /* USER CODE END Error_Handler_Debug */
 }
@@ -184,6 +203,7 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+  printf("Wrong parameters value: file %s on line %d\r\n", file, line);
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
