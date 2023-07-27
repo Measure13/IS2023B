@@ -29,7 +29,10 @@ extern "C" {
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
-
+extern volatile bool initialization_done, ready_to_receive, receive_done, new_setting;
+void USART_Conv_Data(uint16_t* adc_data_p, uint16_t length);
+void USART_Send_Data_Direct(uint8_t* data_p, uint16_t data_len);
+void USART_Send_Data_Temp(uint8_t *data_p, uint16_t data_len);
 /* USER CODE END Includes */
 
 extern UART_HandleTypeDef huart1;

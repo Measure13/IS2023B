@@ -31,6 +31,10 @@ is2023b\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h
 is2023b\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h
 is2023b\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h
 is2023b\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
+is2023b\main.o: D:\Softwares\Keil5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdbool.h
+is2023b\main.o: D:\Softwares\Keil5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdio.h
+is2023b\main.o: D:\Softwares\Keil5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdlib.h
+is2023b\main.o: D:\Softwares\Keil5\ARM\ARM_Compiler_5.06u7\Bin\..\include\string.h
 is2023b\main.o: ../Core/Inc/tim.h
-is2023b\main.o: ../Core/Inc/usart.h
 is2023b\main.o: ../Core/Inc/gpio.h
+is2023b\main.o: ../Core/Inc/usart.h

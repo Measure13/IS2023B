@@ -21,7 +21,18 @@
 #include "usart.h"
 
 /* USER CODE BEGIN 0 */
+#define UART_RX_BUF_SIZE 2048 // 1024 * sizeof(uint16_t)
 
+volatile bool initialization_done = false;
+volatile bool ready_to_receive = false;
+volatile bool receive_done = false;
+volatile bool new_setting = false;
+
+static uint8_t uart1_rx_bp[UART_RX_BUF_SIZE];
+static uint8_t uart1_tx_bp[UART_RX_BUF_SIZE];
+static uint8_t uart1_rx_cnt = 0;
+static uint8_t uart1_tx_cnt = 0;
+static uint8_t uart1_rx_buf = 0;
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart1;
@@ -51,7 +62,7 @@ void MX_USART1_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART1_Init 2 */
-
+  HAL_UART_Receive_IT(&huart1, (uint8_t *)&uart1_rx_buf, 1);
   /* USER CODE END USART1_Init 2 */
 
 }
@@ -115,5 +126,73 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 }
 
 /* USER CODE BEGIN 1 */
+int fputc(int ch, FILE *stream)
+{
+	while((USART1->SR & 0X40) == 0);
 
+	USART1->DR = (uint8_t) ch;
+
+	return ch;
+}
+
+void UART_RX_Data_Parse(uint8_t* p, uint8_t cnt)
+{
+  initialization_done = false;
+  ready_to_receive = false;
+  receive_done = false;
+  new_setting = false;
+	switch (p[0])
+  {
+  case 0x88:
+    initialization_done = true;
+    break;
+  case 0xFE:
+    ready_to_receive = true;
+    break;
+  case 0xFD:
+    receive_done = true;
+    break;
+  default:
+    break;
+  }
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	/* Prevent unused argument(s) compilation warning */
+	UNUSED(huart);
+ 
+	if(uart1_rx_cnt >= UART_RX_BUF_SIZE)
+	{
+		uart1_rx_cnt = 0;
+		memset(uart1_rx_bp, 0x00, sizeof(uart1_rx_bp));
+		USART_Send_Data_Direct("Overflow!!!\n", 13); 	
+	}
+	else
+	{
+		uart1_rx_bp[uart1_rx_cnt++] = uart1_rx_buf;
+	
+		if((uart1_rx_cnt > 3)&&(uart1_rx_bp[uart1_rx_cnt-3] == 0xFF)&&(uart1_rx_bp[uart1_rx_cnt-2] == 0xFF)&&(uart1_rx_bp[uart1_rx_cnt-1] == 0xFF))
+		{
+			UART_RX_Data_Parse(uart1_rx_bp, uart1_rx_cnt);
+			uart1_rx_cnt = 0;
+			memset(uart1_rx_bp, 0x00, sizeof(uint8_t) * UART_RX_BUF_SIZE);
+		}
+	}
+	HAL_UART_Receive_IT(&huart1, (uint8_t *)&uart1_rx_buf, 1);
+}
+
+void USART_Send_Data_Direct(uint8_t* data_p, uint16_t data_len)
+{
+	HAL_UART_Transmit(&huart1, data_p, data_len, 0xFFFF);
+	while(HAL_UART_GetState(&huart1) == HAL_UART_STATE_BUSY_TX);
+}
+
+void USART_Send_Data_Temp(uint8_t* data_p, uint16_t data_len)
+{
+	strncpy((char*)uart1_tx_bp, (char*)data_p, data_len);
+	HAL_UART_Transmit(&huart1, uart1_tx_bp, uart1_tx_cnt, 0xFFFF);
+	while(HAL_UART_GetState(&huart1) == HAL_UART_STATE_BUSY_TX);
+	memset(uart1_tx_bp, 0x00, sizeof(uint8_t) * UART_RX_BUF_SIZE);
+}
 /* USER CODE END 1 */
