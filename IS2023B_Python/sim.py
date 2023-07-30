@@ -37,7 +37,7 @@ def gradient_descent(pi:np.ndarray, step:int):
         sum += abs(POINT_DIST[name])
     for name, p in enumerate(MICROPHONES):
         POINT_DIST[name] /= sum
-        gradients_list[name] = G_VECTOR[name] * POINT_DIST[name] * (steps + sum / 20) *  (1 - log(1 + exp(step / 5 - 10) ** 3) / 0.5)#  (exp(-step / 8) + 0.5)
+        gradients_list[name] = G_VECTOR[name] * POINT_DIST[name] * (steps + sum / 20) *  (1 - log(1 + exp(step / 5 - 10)) / 0.65)#  (exp(-step / 8) + 0.5)
         pi1 += gradients_list[name]
     return pi1
 

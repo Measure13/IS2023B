@@ -4,6 +4,7 @@
         "*.asm": "asm-collection",
         "main.h": "c",
         "usart.h": "c",
-        "tim.h": "c"
+        "tim.h": "c",
+        "adc.h": "c"
     }
 }
