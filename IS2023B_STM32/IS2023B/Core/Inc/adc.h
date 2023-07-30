@@ -41,7 +41,8 @@ extern ADC_HandleTypeDef hadc1;
 void MX_ADC1_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+float ADC_Get_Vpp(uint16_t* data);
+void ADC_Get_Values(uint32_t sample_rate);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

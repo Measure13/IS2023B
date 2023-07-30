@@ -47,6 +47,11 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+bool volatile conv_done = false;
+uint16_t adc_values[ADC_DATA_LENGTH + 4];
+float reference_voltage = 0.0f;
+float actual_voltage = 0.0f;
+
 static uint16_t total_steps = 50;
 static uint16_t steps = 15;
 static uint16_t P_skip_num = 0;
@@ -55,7 +60,7 @@ static float MICROPHONE[4][2] = { {HALF_SQUARE, HALF_SQUARE},
                                   {-HALF_SQUARE, -HALF_SQUARE}, 
                                   {HALF_SQUARE, -HALF_SQUARE}};
 static float POINT_DIST[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-static float CORRECT_POINT_DIST[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+// static float CORRECT_POINT_DIST[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 static float G_VECTOR[4][2] = {{0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}};
 bool volatile first_interrupt = true;
 uint8_t volatile interrupt_times = 0;
@@ -114,7 +119,11 @@ int main(void)
   UARTHMI_Forget_It();
   UARTHMI_Reset();
   HAL_Delay(150);
-  Configuration_Init();
+  HAL_TIM_Base_Start_IT(&htim3);
+	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_values, ADC_DATA_LENGTH + 4);
+  // Configuration_Init();
+  ADC_Get_Values(ADC_SAMPLE_RATE);
+  reference_voltage = ADC_Get_Vpp(adc_values + 4);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -124,13 +133,31 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    if (interrupt_times == 4)
+    while (1)
     {
-      __NVIC_DisableIRQ(TIM2_IRQn);
-      Quadrant_Lattice_Indexing();
-      __NVIC_EnableIRQ(TIM2_IRQn);
+      ADC_Get_Values(ADC_SAMPLE_RATE);
+      actual_voltage = ADC_Get_Vpp(adc_values + 4);
+      if (actual_voltage < METAL_DETECT_VOLTAGE)
+      {
+        Configuration_Init();
+        ALARM;
+        break;
+      }
+      else
+      {
+        NO_BB;
+      }
+      
     }
-    
+    while (1)
+    {
+      if (interrupt_times == 4)
+      {
+        __NVIC_DisableIRQ(TIM2_IRQn);
+        Quadrant_Lattice_Indexing();
+        break;
+      }
+    }
   }
   /* USER CODE END 3 */
 }
@@ -197,13 +224,13 @@ static void Gradient_descent(uint8_t step)
   float gradients_list[4][2] = {{0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}};
   for (uint8_t i = 0; i < 4; ++i)
   {
-    POINT_DIST[i] = (dist(pix, piy, MICROPHONE[i][0], MICROPHONE[i][1]) - dist(pix, piy, MICROPHONE[P_skip_num][0], MICROPHONE[P_skip_num][1])) - quadrant_time_stamp[i] / CLK_FREQ * V_VOICE;
+    POINT_DIST[i] = (dist(pix, piy, MICROPHONE[i][0], MICROPHONE[i][1]) - dist(pix, piy, MICROPHONE[P_skip_num][0], MICROPHONE[P_skip_num][1])) - quadrant_time_stamp[i + 1] / CLK_FREQ * V_VOICE;
     sum += fabsf(POINT_DIST[i]);
   }
   for (uint8_t i = 0; i < 4; ++i)
   {
     POINT_DIST[i] /= sum;
-    temp = (steps + sum / 20.0f) * (1.0f - logf(1.0f + exp(step / 5.0f - 10.0f)) / 0.65f);
+    temp = (steps + sum / 20.0f) * (1.0f - logf(1.0f + expf(step / 5.0f - 10.0f)) / 0.65f);
     gradients_list[i][0] = G_VECTOR[i][0] * POINT_DIST[i] * temp;
     gradients_list[i][1] = G_VECTOR[i][1] * POINT_DIST[i] * temp;
     pix += gradients_list[i][0];
@@ -233,16 +260,16 @@ static void Gradient_descent_wrapper(void)
 static void Quadrant_Lattice_Indexing(void)
 {
   int8_t x_index, y_index;
-  for (uint8_t i = 0; i < 4; ++i)
+  uint32_t min = quadrant_time_stamp[0];
+  for (uint8_t i = 1; i < 4; ++i)
   {
-    if (quadrant_time_order[i + 1] == 1)
+    if (quadrant_time_stamp[i] < min)
     {
       P_skip_num = i;
-      pix = MICROPHONE[i][0] * 5.0f / UARTHMI_LATTICE;
-      piy = MICROPHONE[i][1] * 5.0f / UARTHMI_LATTICE;
-      break;
     }
   }
+  pix = MICROPHONE[P_skip_num][0] * 5.0f / UARTHMI_LATTICE;
+  piy = MICROPHONE[P_skip_num][1] * 5.0f / UARTHMI_LATTICE;
   UARTHMI_Send_Number(0, P_skip_num + 1);
   Gradient_descent_wrapper();
   x_index = (int8_t)(fabsf(pix) / UNIT) + 1;

@@ -86,7 +86,7 @@ void MX_TIM2_Init(void)
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 0;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 376471;
+  htim2.Init.Period = 976471;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
@@ -268,5 +268,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   memset(quadrant_time_order, 0x00, 5);
   interrupt_times = 0;
   first_interrupt = true;
+}
+
+void Timer_3_Adjust(uint32_t freq)
+{
+	uint32_t timer_period;
+	timer_period = 64 * 1000 * 1000 / freq - 1;
+	htim3.Instance->ARR = timer_period;
+	htim3.Instance->CCR2 = timer_period / 2;
+	htim3.Instance->EGR = TIM_EGR_UG;
 }
 /* USER CODE END 1 */

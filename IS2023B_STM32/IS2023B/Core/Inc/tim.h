@@ -47,7 +47,7 @@ void MX_TIM2_Init(void);
 void MX_TIM3_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+void Timer_3_Adjust(uint32_t freq);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

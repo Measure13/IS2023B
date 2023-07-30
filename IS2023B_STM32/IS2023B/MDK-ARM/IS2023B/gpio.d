@@ -24,6 +24,9 @@ is2023b\gpio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_exti.h
 is2023b\gpio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma.h
 is2023b\gpio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma_ex.h
 is2023b\gpio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_cortex.h
+is2023b\gpio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_adc.h
+is2023b\gpio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_adc.h
+is2023b\gpio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_adc_ex.h
 is2023b\gpio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash.h
 is2023b\gpio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash_ex.h
 is2023b\gpio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash_ramfunc.h
@@ -32,9 +35,11 @@ is2023b\gpio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h
 is2023b\gpio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h
 is2023b\gpio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h
 is2023b\gpio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
+is2023b\gpio.o: ../Core/Inc/tim.h
+is2023b\gpio.o: ../Core/Inc/main.h
+is2023b\gpio.o: ../Core/Inc/gpio.h
 is2023b\gpio.o: D:\Softwares\Keil5\ARM\ARM_Compiler_5.06u7\Bin\..\include\math.h
 is2023b\gpio.o: D:\Softwares\Keil5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdbool.h
 is2023b\gpio.o: D:\Softwares\Keil5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdio.h
 is2023b\gpio.o: D:\Softwares\Keil5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdlib.h
 is2023b\gpio.o: D:\Softwares\Keil5\ARM\ARM_Compiler_5.06u7\Bin\..\include\string.h
-is2023b\gpio.o: ../Core/Inc/tim.h
