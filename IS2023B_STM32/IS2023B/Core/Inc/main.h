@@ -31,6 +31,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -63,6 +64,7 @@ extern bool volatile first_interrupt;
 extern uint8_t volatile interrupt_times;
 extern uint32_t quadrant_time_stamp[5];
 extern uint8_t quadrant_time_order[5];
+void Configuration_Init(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -82,10 +84,13 @@ extern uint8_t quadrant_time_order[5];
 /* USER CODE BEGIN Private defines */
 #define LENGTH 500
 #define WIDTH 500
-#define HALF_SQUARE LENGTH / 2 + 50
+#define HALF_SQUARE (LENGTH / 2 + 50.0f)
 #define UNIT 50
-#define V_VOICE 340
-#define CLK_FREQ  128000000
+#define UARTHMI_LATTICE 12
+#define UARTHMI_SQUARE 25
+#define LATTICE_RATIO (UNIT / UARTHMI_SQUARE)
+#define V_VOICE 340.0f
+#define CLK_FREQ  128000000.0f
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
