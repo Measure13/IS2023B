@@ -245,3 +245,11 @@ void UARTHMI_Cross_Page_Set_Number(uint8_t index, int number, char* page_name)
     sprintf(mes, "%s.n%d.val=%d\xff\xff\xff", page_name, index, number);
     USART_Send_Data_Direct(mes, strlen((const char*)mes));
 }
+
+void UARTHMI_Add_Point_To_Curve(int number)
+{
+    char mes[30];
+    memset(mes, 0x00, sizeof(char) * 30);
+    sprintf(mes, "add s0.id,0,%d\xff\xff\xff", number);
+    USART_Send_Data_Direct(mes, strlen((const char*)mes));
+}

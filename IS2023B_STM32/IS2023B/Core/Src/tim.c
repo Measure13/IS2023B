@@ -194,7 +194,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void Timer_2_Adjust(uint32_t freq)
 {
 	uint32_t timer_period;
-	timer_period = 84 * 1000 * 1000 / freq - 1;
+	timer_period = (uint32_t)CLK_FREQ / freq - 1;
 	htim2.Instance->ARR = timer_period;
 	htim2.Instance->CCR2 = timer_period / 2;
 	htim2.Instance->EGR = TIM_EGR_UG;

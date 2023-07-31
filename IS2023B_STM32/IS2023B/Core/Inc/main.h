@@ -102,7 +102,7 @@ void Configuration_Init(void);
 #define UARTHMI_SQUARE 25
 #define LATTICE_RATIO (UNIT / UARTHMI_SQUARE)
 #define V_VOICE 340.0f
-#define CLK_FREQ  128000000.0f
+#define CLK_FREQ  84000000.0f
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

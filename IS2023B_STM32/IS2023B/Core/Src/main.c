@@ -123,6 +123,7 @@ int main(void)
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_values, ADC_DATA_LENGTH + 4);
   without_ref_vol = ADC_Get_Vpp_Median(10);
   metal_detect_thresh = without_ref_vol * REF_WEIGHT + with_ref_vol * (1 - REF_WEIGHT);
+  UARTHMI_Cross_Page_Set_Number(1, (int)(metal_detect_thresh * 1000), "page1");
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -160,6 +161,7 @@ int main(void)
       else
       {
         NO_BB;
+        HAL_Delay(5); // when metal is around, avoid going to IRQ frequently
         paused = true;
       }
     }
@@ -310,9 +312,9 @@ static void Quadrant_Lattice_Indexing(void)
   UARTHMI_Send_Number(0, P_skip_num + 1);
   for (uint8_t i = 0; i < 4; ++i)
   {
-    CORRECT_POINT_DIST[i] = quadrant_time_stamp[i] - min;
+    CORRECT_POINT_DIST[i] = (float)(quadrant_time_stamp[i] - min) * V_VOICE / CLK_FREQ;
+    UARTHMI_Cross_Page_Set_Number(6 + i, (int)(CORRECT_POINT_DIST[i] * 1000), "page1");
   }
-  
   Gradient_descent_wrapper();
   x_index = (int8_t)(fabsf(pix) / UNIT) + 1;
   y_index = (int8_t)(fabsf(piy) / UNIT) + 1;

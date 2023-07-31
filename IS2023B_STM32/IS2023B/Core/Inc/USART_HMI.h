@@ -17,4 +17,5 @@ void UARTHMI_Send_Number(uint8_t index, int number);
 void UARTHMI_ADC_Data_Display(uint16_t* adc_data_pointer);
 void UARTHMI_Reset(void);
 void UARTHMI_Cross_Page_Set_Number(uint8_t index, int number, char* page_name);
+void UARTHMI_Add_Point_To_Curve(int number);
 #endif
