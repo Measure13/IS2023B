@@ -165,16 +165,6 @@ void ADC_Get_Values(uint32_t sample_rate)
   conv_done = false;
 }
 
-// inline static int Min(int a, int b)
-// {
-//     return a < b ? a : b;
-// }
-
-// static inline uint32_t max_u32(uint32_t a, uint32_t b)
-// {
-// 	return (a > b) ? a : b;
-// }
-
 static inline uint32_t min_u32(uint32_t a, uint32_t b)
 {
 	return (a > b) ? b : a;

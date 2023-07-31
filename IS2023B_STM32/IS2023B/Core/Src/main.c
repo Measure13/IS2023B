@@ -49,7 +49,6 @@
 /* USER CODE BEGIN PV */
 bool volatile conv_done = false;
 uint16_t adc_values[ADC_DATA_LENGTH + 4];
-float reference_voltage = 0.0f;
 float actual_voltage = 0.0f;
 bool paused = false;
 float metal_detect_thresh = 1.2f, with_ref_vol = 0.0f, without_ref_vol = 0.0f;
@@ -122,9 +121,8 @@ int main(void)
   HAL_Delay(150);
   HAL_TIM_Base_Start(&htim2);
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_values, ADC_DATA_LENGTH + 4);
-  reference_voltage = ADC_Get_Vpp_Median(10);
-  with_ref_vol = reference_voltage;
-  metal_detect_thresh = with_ref_vol * REF_WEIGHT + without_ref_vol * (1 - REF_WEIGHT);
+  without_ref_vol = ADC_Get_Vpp_Median(10);
+  metal_detect_thresh = without_ref_vol * REF_WEIGHT + with_ref_vol * (1 - REF_WEIGHT);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -137,7 +135,6 @@ int main(void)
     while (1)
     {
       actual_voltage = ADC_Get_Vpp_Median(10);
-      // actual_voltage = ADC_Get_Vpp(adc_values + 4);
       if (without_metal)
       {
         without_ref_vol = actual_voltage;
@@ -170,7 +167,6 @@ int main(void)
     ALARM;
     while (1)
     {
-      // break;
       if (paused)
       {
         if (overtime)
