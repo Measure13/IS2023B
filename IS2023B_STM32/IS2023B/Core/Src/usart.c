@@ -21,18 +21,22 @@
 #include "usart.h"
 
 /* USER CODE BEGIN 0 */
-#define UART_RX_BUF_SIZE 2048 // 1024 * sizeof(uint16_t)
+#define UART_RX_BUF_SIZE 128 // 1024 * sizeof(uint16_t)
 
 volatile bool initialization_done = false;
 volatile bool ready_to_receive = false;
 volatile bool receive_done = false;
-volatile bool new_setting = false;
+volatile bool with_metal = false;
+volatile bool without_metal = false;
 
-static uint8_t uart1_rx_bp[UART_RX_BUF_SIZE];
-static uint8_t uart1_tx_bp[UART_RX_BUF_SIZE];
-static uint8_t uart1_rx_cnt = 0;
-static uint8_t uart1_tx_cnt = 0;
-static uint8_t uart1_rx_buf = 0;
+#define NO_METAL_CALIB 0X65
+#define HAS_METAL_CALIB 0X66
+
+uint8_t uart1_rx_bp[UART_RX_BUF_SIZE];
+uint8_t uart1_tx_bp[UART_RX_BUF_SIZE];
+static uint16_t uart1_rx_cnt = 0;
+static uint16_t uart1_tx_cnt = 0;
+static uint16_t uart1_rx_buf = 0;
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart1;
@@ -140,7 +144,8 @@ void UART_RX_Data_Parse(uint8_t* p, uint8_t cnt)
   initialization_done = false;
   ready_to_receive = false;
   receive_done = false;
-  new_setting = false;
+  with_metal = false;
+  without_metal = false;
 	switch (p[0])
   {
   case 0x88:
@@ -152,6 +157,12 @@ void UART_RX_Data_Parse(uint8_t* p, uint8_t cnt)
   case 0xFD:
     receive_done = true;
     break;
+  case NO_METAL_CALIB:
+    without_metal = true;
+    break;
+  case HAS_METAL_CALIB:
+    with_metal = true;
+    break;//page1.n3.pco=2023
   default:
     break;
   }

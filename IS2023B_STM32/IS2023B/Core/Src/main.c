@@ -51,6 +51,10 @@ bool volatile conv_done = false;
 uint16_t adc_values[ADC_DATA_LENGTH + 4];
 float reference_voltage = 0.0f;
 float actual_voltage = 0.0f;
+bool paused = false;
+float metal_detect_thresh = 1.2f, with_ref_vol = 0.0f, without_ref_vol = 0.0f;
+bool with_calibration_done = false;
+bool without_calibration_done = false;
 
 static uint16_t total_steps = 50;
 static uint16_t steps = 15;
@@ -60,12 +64,9 @@ static float MICROPHONE[4][2] = { {HALF_SQUARE, HALF_SQUARE},
                                   {-HALF_SQUARE, -HALF_SQUARE}, 
                                   {HALF_SQUARE, -HALF_SQUARE}};
 static float POINT_DIST[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-// static float CORRECT_POINT_DIST[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+static float CORRECT_POINT_DIST[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 static float G_VECTOR[4][2] = {{0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}};
-bool volatile first_interrupt = true;
-uint8_t volatile interrupt_times = 0;
-uint32_t quadrant_time_stamp[5] = {0, 0, 0, 0, 0};
-uint8_t quadrant_time_order[5] = {0, 0, 0, 0, 0};
+uint32_t quadrant_time_stamp[4] = {0, 0, 0, 0};
 static float pix, piy;
 /* USER CODE END PV */
 
@@ -114,16 +115,17 @@ int main(void)
   MX_USART1_UART_Init();
   MX_ADC1_Init();
   MX_TIM1_Init();
-  MX_TIM3_Init();
+  MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
   UARTHMI_Forget_It();
   UARTHMI_Reset();
   HAL_Delay(150);
-  HAL_TIM_Base_Start_IT(&htim3);
+  HAL_TIM_Base_Start_IT(&htim2);
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_values, ADC_DATA_LENGTH + 4);
-  // Configuration_Init();
+	//Configuration_Init();
   ADC_Get_Values(ADC_SAMPLE_RATE);
   reference_voltage = ADC_Get_Vpp(adc_values + 4);
+  with_ref_vol = reference_voltage;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -137,7 +139,25 @@ int main(void)
     {
       ADC_Get_Values(ADC_SAMPLE_RATE);
       actual_voltage = ADC_Get_Vpp(adc_values + 4);
-      if (actual_voltage < METAL_DETECT_VOLTAGE)
+      if (without_metal)
+      {
+        without_ref_vol = actual_voltage;
+        UARTHMI_Cross_Page_Set_Number(0, (int)(actual_voltage * 1000), "page1");
+        printf("page1.n0.pco=2023\xff\xff\xff");
+        without_metal = false;
+        without_calibration_done = true;
+        metal_detect_thresh = (with_ref_vol + without_ref_vol) / 2.0f;
+      }
+      else if (with_metal)
+      {
+        with_ref_vol = actual_voltage;
+        UARTHMI_Cross_Page_Set_Number(3, (int)(actual_voltage * 1000), "page1");
+        printf("page1.n3.pco=2023\xff\xff\xff");
+        with_metal = false;
+        with_calibration_done = true;
+        metal_detect_thresh = (with_ref_vol + without_ref_vol) / 2.0f;
+      }
+      if ((actual_voltage < metal_detect_thresh) && ((without_calibration_done) && (with_calibration_done)))
       {
         Configuration_Init();
         ALARM;
@@ -146,16 +166,21 @@ int main(void)
       else
       {
         NO_BB;
+        paused = true;
       }
-      
     }
     while (1)
     {
-      if (interrupt_times == 4)
+      break;
+      if (paused)
       {
-        __NVIC_DisableIRQ(TIM2_IRQn);
-        Quadrant_Lattice_Indexing();
-        break;
+        if (!((__NVIC_GetEnableIRQ(EXTI0_IRQn)) | (__NVIC_GetEnableIRQ(EXTI1_IRQn)) | (__NVIC_GetEnableIRQ(EXTI2_IRQn)) | (__NVIC_GetEnableIRQ(EXTI3_IRQn))))// (interrupt_times == 4)
+        {
+          __NVIC_DisableIRQ(TIM5_IRQn);
+          Quadrant_Lattice_Indexing();
+          break;
+        }
+        paused = false;
       }
     }
   }
@@ -184,7 +209,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 4;
-  RCC_OscInitStruct.PLL.PLLN = 128;
+  RCC_OscInitStruct.PLL.PLLN = 168;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 4;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
@@ -201,7 +226,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
   {
     Error_Handler();
   }
@@ -224,7 +249,7 @@ static void Gradient_descent(uint8_t step)
   float gradients_list[4][2] = {{0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}};
   for (uint8_t i = 0; i < 4; ++i)
   {
-    POINT_DIST[i] = (dist(pix, piy, MICROPHONE[i][0], MICROPHONE[i][1]) - dist(pix, piy, MICROPHONE[P_skip_num][0], MICROPHONE[P_skip_num][1])) - quadrant_time_stamp[i + 1] / CLK_FREQ * V_VOICE;
+    POINT_DIST[i] = (dist(pix, piy, MICROPHONE[i][0], MICROPHONE[i][1]) - dist(pix, piy, MICROPHONE[P_skip_num][0], MICROPHONE[P_skip_num][1])) - CORRECT_POINT_DIST[i] / CLK_FREQ * V_VOICE;
     sum += fabsf(POINT_DIST[i]);
   }
   for (uint8_t i = 0; i < 4; ++i)
@@ -266,11 +291,17 @@ static void Quadrant_Lattice_Indexing(void)
     if (quadrant_time_stamp[i] < min)
     {
       P_skip_num = i;
+      min = quadrant_time_stamp[i];
     }
   }
   pix = MICROPHONE[P_skip_num][0] * 5.0f / UARTHMI_LATTICE;
   piy = MICROPHONE[P_skip_num][1] * 5.0f / UARTHMI_LATTICE;
   UARTHMI_Send_Number(0, P_skip_num + 1);
+  for (uint8_t i = 0; i < 4; ++i)
+  {
+    CORRECT_POINT_DIST[i] = quadrant_time_stamp[i] - min;
+  }
+  
   Gradient_descent_wrapper();
   x_index = (int8_t)(fabsf(pix) / UNIT) + 1;
   y_index = (int8_t)(fabsf(piy) / UNIT) + 1;
@@ -290,15 +321,15 @@ static void Quadrant_Lattice_Indexing(void)
 
 void Configuration_Init(void)
 {
-  HAL_TIM_Base_Stop(&htim2);
+  HAL_TIM_Base_Stop(&htim5);
+  __HAL_TIM_SetCounter(&htim5, 0);
+  memset(quadrant_time_stamp, 0x00000000, sizeof(uint32_t) * 4);
   __NVIC_EnableIRQ(EXTI0_IRQn);
   __NVIC_EnableIRQ(EXTI1_IRQn);
   __NVIC_EnableIRQ(EXTI2_IRQn);
   __NVIC_EnableIRQ(EXTI3_IRQn);
-  memset(quadrant_time_stamp, 0x00000000, sizeof(uint32_t) * 5);
-  memset(quadrant_time_order, 0x00, 5);
-  interrupt_times = 0;
-  first_interrupt = true;
+  htim5.State = HAL_TIM_STATE_BUSY;
+  __HAL_TIM_ENABLE(&htim5);
 }
 /* USER CODE END 4 */
 

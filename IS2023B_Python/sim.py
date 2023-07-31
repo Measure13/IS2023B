@@ -20,12 +20,15 @@ POINT_DIST = np.zeros(4)
 CORRECT_POINT_DIST = np.zeros(4)
 O = np.array([0, 0])
 G_VECTOR = np.zeros((4, 2))
-RW, RH = 8., 8.
+RW, RH = 15., 15.
 P = None
 total_steps = 50
 steps = 15
 P_skip_num = 0
+drop_point = True
 
+plt.rcParams['font.sans-serif'] = ['SimHei']
+plt.rcParams['axes.unicode_minus'] = False
 fig, ax = plt.subplots()
 
 def gradient_descent(pi:np.ndarray, step:int):
@@ -45,6 +48,10 @@ def gradient_descent_wrapper():
     global P_skip_num, G_VECTOR
     P_skip_num = np.argmin(CORRECT_POINT_DIST)
     P0 = MICROPHONES[P_skip_num] * 5 / 12
+    if drop_point:
+        ax.scatter(P0[0], P0[1], 90, "y", "+", label="初始点")
+    else:
+        ax.scatter(P0[0], P0[1], 90, "y", "+")
     Pi = P0
     for i in range(4):
         G_VECTOR[i] = MICROPHONES[i] - MICROPHONES[P_skip_num]
@@ -54,13 +61,16 @@ def gradient_descent_wrapper():
         Pi = gradient_descent(Pi, step)
         if step > total_steps - 5:
             print(f"{step}th dist:{dist(Pi, P)}")
-        ax.scatter(Pi[0], Pi[1], s=1, c="y")
+        if step == 0 and drop_point:
+            ax.scatter(Pi[0], Pi[1], s=6, c="b", marker="*", label="下降路径点")
+        else:
+            ax.scatter(Pi[0], Pi[1], s=6, c="b", marker="*")
         plt.draw()
     print(f"final:{Pi}")
 
 def draw_target():
     ax.set_aspect(1.)
-    ax.scatter(Q1[0], Q1[1], 30, "r", "o")
+    ax.scatter(Q1[0], Q1[1], 30, "r", "o", label="麦克风")
     ax.scatter(Q2[0], Q2[1], 30, "r", "o")
     ax.scatter(Q3[0], Q3[1], 30, "r", "o")
     ax.scatter(Q4[0], Q4[1], 30, "r", "o")
@@ -72,12 +82,16 @@ def dist(p1:np.ndarray, p2:np.ndarray):
     return np.sqrt(np.sum(np.power(p2 - p1, 2)))
 
 def onclick(event:LocationEvent):
-    global P
+    global P, drop_point
     if event.inaxes:
         P = np.array([event.xdata, event.ydata])
         print(f"origin:{P}")
-        artists_object = Rectangle(xy=[P[0], P[1] - RH / sqrt(2)], width=RW, height=RH, angle=45, facecolor="g")
+        if drop_point:
+            artists_object = Rectangle(xy=[P[0], P[1] - RH / sqrt(2)], width=RW, height=RH, angle=45, facecolor="g", label="声源")
+        else:
+            artists_object = Rectangle(xy=[P[0], P[1] - RH / sqrt(2)], width=RW, height=RH, angle=45, facecolor="g")
         ax.add_artist(artists_object)
+        plt.legend(loc="lower center", ncols=2)
         plt.draw()
         for index, p in enumerate(MICROPHONES):
             CORRECT_POINT_DIST[index] = dist(p, P)
@@ -87,11 +101,13 @@ def onclick(event:LocationEvent):
         else:
             gradient_descent_wrapper()
         print()
+        drop_point = False
     else:
         ax.cla()
         draw_target()
         print("clear")
         plt.draw()
+        drop_point = True
 
 cid = fig.canvas.mpl_connect('button_press_event', onclick)
 draw_target()

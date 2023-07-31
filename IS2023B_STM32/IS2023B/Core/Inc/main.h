@@ -63,15 +63,13 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
 #define ADC_DATA_LENGTH 1024
-#define METAL_DETECT_VOLTAGE 1.2f
 #define ADC_SAMPLE_RATE 1000000
 
 extern bool volatile conv_done;
 extern uint16_t adc_values[ADC_DATA_LENGTH + 4];
 extern bool volatile first_interrupt;
 extern uint8_t volatile interrupt_times;
-extern uint32_t quadrant_time_stamp[5];
-extern uint8_t quadrant_time_order[5];
+extern uint32_t quadrant_time_stamp[4];
 void Configuration_Init(void);
 /* USER CODE END EFP */
 

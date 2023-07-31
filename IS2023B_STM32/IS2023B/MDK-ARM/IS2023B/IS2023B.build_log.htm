@@ -27,34 +27,14 @@ Project File Date:  07/30/2023
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 7 (build 960)', folder: 'D:\Softwares\Keil5\ARM\ARM_Compiler_5.06u7\Bin'
 Build target 'IS2023B'
-assembling startup_stm32f407xx.s...
-compiling stm32f4xx_hal_msp.c...
-compiling dma.c...
-compiling usart.c...
-compiling USART_HMI.c...
-..\Core\Src\USART_HMI.c(161): warning:  #177-D: function "UARTHMI_Set_Float"  was declared but never referenced
-  static void UARTHMI_Set_Float(int index, float float_num, uint8_t digits_for_integer, uint8_t digits_for_decimals)
-..\Core\Src\USART_HMI.c: 1 warning, 0 errors
-compiling adc.c...
-../Core/Src/adc.c(244): warning:  #550-D: variable "max_index"  was set but never used
-    int max_index = 0;
-../Core/Src/adc.c(245): warning:  #550-D: variable "min_index"  was set but never used
-    int min_index = 0;
-../Core/Src/adc.c(174): warning:  #177-D: function "Min"  was declared but never referenced
-  inline static int Min(int a, int b)
-../Core/Src/adc.c(179): warning:  #177-D: function "max_u32"  was declared but never referenced
-  static inline uint32_t max_u32(uint32_t a, uint32_t b)
-../Core/Src/adc.c(227): warning:  #177-D: function "Get_Median"  was declared but never referenced
-  static float Get_Median(float* p, uint32_t len)
-../Core/Src/adc.c: 5 warnings, 0 errors
-compiling tim.c...
 compiling main.c...
-compiling gpio.c...
-compiling stm32f4xx_it.c...
+../Core/Src/main.c(175): warning:  #111-D: statement is unreachable
+        if (paused)
+../Core/Src/main.c: 1 warning, 0 errors
 linking...
-Program Size: Code=21404 RO-data=568 RW-data=112 ZI-data=11280  
+Program Size: Code=18368 RO-data=456 RW-data=64 ZI-data=6880  
 FromELF: creating hex file...
-"IS2023B\IS2023B.axf" - 0 Error(s), 6 Warning(s).
+"IS2023B\IS2023B.axf" - 0 Error(s), 1 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -78,7 +58,7 @@ Package Vendor: Keil
 
    * Component: ARM::CMSIS:CORE:5.6.0
       Include file:  CMSIS/Core/Include/tz_context.h
-Build Time Elapsed:  00:00:05
+Build Time Elapsed:  00:00:02
 </pre>
 </body>
 </html>

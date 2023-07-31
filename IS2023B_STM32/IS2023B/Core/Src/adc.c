@@ -44,13 +44,13 @@ void MX_ADC1_Init(void)
   /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
   */
   hadc1.Instance = ADC1;
-  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.ScanConvMode = DISABLE;
   hadc1.Init.ContinuousConvMode = DISABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISING;
-  hadc1.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T3_CC1;
+  hadc1.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T2_CC2;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.NbrOfConversion = 1;
   hadc1.Init.DMAContinuousRequests = ENABLE;
@@ -105,7 +105,7 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle)
     hdma_adc1.Init.MemInc = DMA_MINC_ENABLE;
     hdma_adc1.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
     hdma_adc1.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
-    hdma_adc1.Init.Mode = DMA_NORMAL;
+    hdma_adc1.Init.Mode = DMA_CIRCULAR;
     hdma_adc1.Init.Priority = DMA_PRIORITY_LOW;
     hdma_adc1.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
     if (HAL_DMA_Init(&hdma_adc1) != HAL_OK)
@@ -115,9 +115,6 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle)
 
     __HAL_LINKDMA(adcHandle,DMA_Handle,hdma_adc1);
 
-    /* ADC1 interrupt Init */
-    HAL_NVIC_SetPriority(ADC_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(ADC_IRQn);
   /* USER CODE BEGIN ADC1_MspInit 1 */
 
   /* USER CODE END ADC1_MspInit 1 */
@@ -142,9 +139,6 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* adcHandle)
 
     /* ADC1 DMA DeInit */
     HAL_DMA_DeInit(adcHandle->DMA_Handle);
-
-    /* ADC1 interrupt Deinit */
-    HAL_NVIC_DisableIRQ(ADC_IRQn);
   /* USER CODE BEGIN ADC1_MspDeInit 1 */
 
   /* USER CODE END ADC1_MspDeInit 1 */
@@ -156,14 +150,14 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
 	/* Prevent unused argument(s) compilation warning */
 	UNUSED(hadc);
-	HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_2);
 	conv_done = true;
 }
 
 void ADC_Get_Values(uint32_t sample_rate)
 {
-  Timer_3_Adjust(sample_rate);
-  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+  Timer_2_Adjust(sample_rate);
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
   while (!conv_done)
   {
     ;
@@ -171,85 +165,80 @@ void ADC_Get_Values(uint32_t sample_rate)
   conv_done = false;
 }
 
-inline static int Min(int a, int b)
-{
-    return a < b ? a : b;
-}
+// inline static int Min(int a, int b)
+// {
+//     return a < b ? a : b;
+// }
 
-static inline uint32_t max_u32(uint32_t a, uint32_t b)
-{
-	return (a > b) ? a : b;
-}
+// static inline uint32_t max_u32(uint32_t a, uint32_t b)
+// {
+// 	return (a > b) ? a : b;
+// }
 
-static inline uint32_t min_u32(uint32_t a, uint32_t b)
-{
-	return (a > b) ? b : a;
-}
+// static inline uint32_t min_u32(uint32_t a, uint32_t b)
+// {
+// 	return (a > b) ? b : a;
+// }
 
-static void merge_sort(float* p, uint32_t len, bool ascending)
-{
-    uint32_t left = 0, right = 0, left_limit, right_limit, i, room_len;
-    for (uint32_t window = 1; window < len; window <<= 1)
-    {
-        for (uint32_t offset = 0; offset < len; offset += (window << 1))
-        {
-            left_limit = offset + window - 1;
-            if (left_limit >= len)
-            {
-                break;
-            }
-            right_limit = min_u32(left_limit + window, len - 1);
-            left = offset;
-            right = left_limit + 1;
-            room_len = right_limit - offset + 1;
-            float* room = (float*)malloc(sizeof(float) * room_len);
-            i = 0;
-            while (left <= left_limit && right <= right_limit)
-            {
-                room[i++] = ((p[left] <= p[right]) == ascending) ? p[left++] : p[right++];
-            }
-            while (left <= left_limit)
-            {
-                room[i++] = p[left++];
-            }
-            while (right <= right_limit)
-            {
-                room[i++] = p[right++];
-            }
-            for (uint32_t j = 0; j < room_len; ++j)
-            {
-                p[j + offset] = room[j];
-            }
-            free(room);
-        }
-    }
-}
-static float Get_Median(float* p, uint32_t len)
-{
-	merge_sort(p, len, true);
-	if (len % 2)
-	{
-		return p[len / 2];
-	}
-	else
-	{
-		return (p[len / 2 - 1] + p[len / 2]) / 2;
-	}
-}
+// static void merge_sort(float* p, uint32_t len, bool ascending)
+// {
+//     uint32_t left = 0, right = 0, left_limit, right_limit, i, room_len;
+//     for (uint32_t window = 1; window < len; window <<= 1)
+//     {
+//         for (uint32_t offset = 0; offset < len; offset += (window << 1))
+//         {
+//             left_limit = offset + window - 1;
+//             if (left_limit >= len)
+//             {
+//                 break;
+//             }
+//             right_limit = min_u32(left_limit + window, len - 1);
+//             left = offset;
+//             right = left_limit + 1;
+//             room_len = right_limit - offset + 1;
+//             float* room = (float*)malloc(sizeof(float) * room_len);
+//             i = 0;
+//             while (left <= left_limit && right <= right_limit)
+//             {
+//                 room[i++] = ((p[left] <= p[right]) == ascending) ? p[left++] : p[right++];
+//             }
+//             while (left <= left_limit)
+//             {
+//                 room[i++] = p[left++];
+//             }
+//             while (right <= right_limit)
+//             {
+//                 room[i++] = p[right++];
+//             }
+//             for (uint32_t j = 0; j < room_len; ++j)
+//             {
+//                 p[j + offset] = room[j];
+//             }
+//             free(room);
+//         }
+//     }
+// }
+// static float Get_Median(float* p, uint32_t len)
+// {
+// 	merge_sort(p, len, true);
+// 	if (len % 2)
+// 	{
+// 		return p[len / 2];
+// 	}
+// 	else
+// 	{
+// 		return (p[len / 2 - 1] + p[len / 2]) / 2;
+// 	}
+// }
 
 float ADC_Get_Vpp(uint16_t* data)
 {
   uint16_t max = data[0];
   uint16_t min = data[0];
-  int max_index = 0;
-  int min_index = 0;
   for(int i = 0; i < ADC_DATA_LENGTH; ++i){
-      if(data[i] > max) {max = data[i];max_index = i;}
-      else if(data[i] < min) {min = data[i];min_index = i;}
+      if(data[i] > max) {max = data[i];}//max_index = i;
+      else if(data[i] < min) {min = data[i];}//min_index = i;
   }
-  // max = median(data + max_index, Min(Min(max_index, ADC_DATA_LENGTH - 1 - max_index), MEDIAN_WINDOW), false);
-  // min = median(data + min_index, Min(Min(min_index, ADC_DATA_LENGTH - 1 - min_index), MEDIAN_WINDOW), false);
-  
-  return (max - min) / 4096.0f * 3.3f;
+  return (float)(max - min) / 4096.0f * 3.3f;
 }
 /* USER CODE END 1 */

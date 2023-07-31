@@ -83,10 +83,7 @@ void UARTHMI_Draw_ADC_Wave(int index, uint16_t *pf, uint16_t num, uint8_t margin
     USART_Send_Data_Direct((uint8_t*)message, strlen(message));
     while (!ready_to_receive)
     {
-		if (new_setting)
-		{
-			return;
-		}
+
     }
     ready_to_receive = false;
     for (uint16_t i = 1; i < num; ++i)
@@ -108,10 +105,7 @@ void UARTHMI_Draw_ADC_Wave(int index, uint16_t *pf, uint16_t num, uint8_t margin
     USART_Send_Data_Direct(data_tmp_write, num);
     while (!receive_done)
     {
-		if (new_setting)
-		{
-			return;
-		}
+        
     }
     receive_done = false;
 }
@@ -146,33 +140,33 @@ static uint8_t UARTHMI_Get_Integer_Digits(int integer)
     }
 }
 
-static int UARTHMI_Float_Adjust(float float_num, uint8_t digits_for_integer, uint8_t digits_for_decimals)
-{
-    // ESP_LOGW("fad", "distortion:%d", (int)float_num);
-    uint8_t integer_len = UARTHMI_Get_Integer_Digits((int)float_num);
-    // ESP_LOGW("fad", "distortion len:%u", integer_len);
-    int adjusted_float = 0;
-    integer_len = digits_for_integer + digits_for_decimals - integer_len;
-    float_num *= powf(10.0f, integer_len);
-    adjusted_float = (int)float_num;
-    return adjusted_float;
-}
+// static int UARTHMI_Float_Adjust(float float_num, uint8_t digits_for_integer, uint8_t digits_for_decimals)
+// {
+//     // ESP_LOGW("fad", "distortion:%d", (int)float_num);
+//     uint8_t integer_len = UARTHMI_Get_Integer_Digits((int)float_num);
+//     // ESP_LOGW("fad", "distortion len:%u", integer_len);
+//     int adjusted_float = 0;
+//     integer_len = digits_for_integer + digits_for_decimals - integer_len;
+//     float_num *= powf(10.0f, integer_len);
+//     adjusted_float = (int)float_num;
+//     return adjusted_float;
+// }
 
-static void UARTHMI_Set_Float(int index, float float_num, uint8_t digits_for_integer, uint8_t digits_for_decimals)
-{
-    uint8_t data_len;
-    uint8_t *send_str;
-    uint8_t len = UARTHMI_Get_Integer_Digits(index) + 11 + digits_for_integer + digits_for_decimals;
-    send_str = (uint8_t *)malloc(sizeof(uint8_t) * (len));
-    // if (!send_str)ESP_ERROR_CHECK(ESP_ERR_NO_MEM);
-    memset(send_str, 0, sizeof(uint8_t) * (len));
-    // ESP_LOGE(TAG, "distortion:%f", float_num);
-    sprintf((char *)send_str, "x%d.val=%d", index, UARTHMI_Float_Adjust(float_num, digits_for_integer, digits_for_decimals));
-    data_len = UARTHMI_Append_Ending(send_str);
-    USART_Send_Data_Direct(send_str, data_len);
-    // ESP_LOGI(TAG, "write done, size:%d", data_len);
-    free(send_str);
-}
+// static void UARTHMI_Set_Float(int index, float float_num, uint8_t digits_for_integer, uint8_t digits_for_decimals)
+// {
+//     uint8_t data_len;
+//     uint8_t *send_str;
+//     uint8_t len = UARTHMI_Get_Integer_Digits(index) + 11 + digits_for_integer + digits_for_decimals;
+//     send_str = (uint8_t *)malloc(sizeof(uint8_t) * (len));
+//     // if (!send_str)ESP_ERROR_CHECK(ESP_ERR_NO_MEM);
+//     memset(send_str, 0, sizeof(uint8_t) * (len));
+//     // ESP_LOGE(TAG, "distortion:%f", float_num);
+//     sprintf((char *)send_str, "x%d.val=%d", index, UARTHMI_Float_Adjust(float_num, digits_for_integer, digits_for_decimals));
+//     data_len = UARTHMI_Append_Ending(send_str);
+//     USART_Send_Data_Direct(send_str, data_len);
+//     // ESP_LOGI(TAG, "write done, size:%d", data_len);
+//     free(send_str);
+// }
 
 void UARTHMI_Send_Float(int index, float float_num)
 {
@@ -242,4 +236,12 @@ void UARTHMI_Send_Number(uint8_t index, int number)
 void UARTHMI_Reset(void)
 {
     printf("rest\xff\xff\xff");
+}
+
+void UARTHMI_Cross_Page_Set_Number(uint8_t index, int number, char* page_name)
+{
+    char mes[30];
+    memset(mes, 0x00, sizeof(char) * 30);
+    sprintf(mes, "%s.n%d.val=%d\xff\xff\xff", page_name, index, number);
+    USART_Send_Data_Direct(mes, strlen((const char*)mes));
 }
