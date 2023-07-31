@@ -70,6 +70,7 @@ extern uint16_t adc_values[ADC_DATA_LENGTH + 4];
 extern bool volatile first_interrupt;
 extern uint8_t volatile interrupt_times;
 extern uint32_t quadrant_time_stamp[4];
+extern bool volatile overtime;
 void Configuration_Init(void);
 /* USER CODE END EFP */
 
@@ -92,6 +93,7 @@ void Configuration_Init(void);
 /* USER CODE BEGIN Private defines */
 #define ALARM HAL_GPIO_WritePin(BEEP_GPIO_Port, BEEP_Pin, GPIO_PIN_SET)
 #define NO_BB HAL_GPIO_WritePin(BEEP_GPIO_Port, BEEP_Pin, GPIO_PIN_RESET)
+#define REF_WEIGHT 0.75f
 #define LENGTH 500
 #define WIDTH 500
 #define HALF_SQUARE (LENGTH / 2 + 50.0f)

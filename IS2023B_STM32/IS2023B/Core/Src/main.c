@@ -53,8 +53,9 @@ float reference_voltage = 0.0f;
 float actual_voltage = 0.0f;
 bool paused = false;
 float metal_detect_thresh = 1.2f, with_ref_vol = 0.0f, without_ref_vol = 0.0f;
-bool with_calibration_done = false;
-bool without_calibration_done = false;
+bool with_calibration_done = true;
+bool without_calibration_done = true;
+bool volatile overtime = false;
 
 static uint16_t total_steps = 50;
 static uint16_t steps = 15;
@@ -114,18 +115,16 @@ int main(void)
   MX_TIM2_Init();
   MX_USART1_UART_Init();
   MX_ADC1_Init();
-  MX_TIM1_Init();
   MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
   UARTHMI_Forget_It();
   UARTHMI_Reset();
   HAL_Delay(150);
-  HAL_TIM_Base_Start_IT(&htim2);
+  HAL_TIM_Base_Start(&htim2);
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_values, ADC_DATA_LENGTH + 4);
-	//Configuration_Init();
-  ADC_Get_Values(ADC_SAMPLE_RATE);
-  reference_voltage = ADC_Get_Vpp(adc_values + 4);
+  reference_voltage = ADC_Get_Vpp_Median(10);
   with_ref_vol = reference_voltage;
+  metal_detect_thresh = with_ref_vol * REF_WEIGHT + without_ref_vol * (1 - REF_WEIGHT);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -137,8 +136,8 @@ int main(void)
     /* USER CODE BEGIN 3 */
     while (1)
     {
-      ADC_Get_Values(ADC_SAMPLE_RATE);
-      actual_voltage = ADC_Get_Vpp(adc_values + 4);
+      actual_voltage = ADC_Get_Vpp_Median(10);
+      // actual_voltage = ADC_Get_Vpp(adc_values + 4);
       if (without_metal)
       {
         without_ref_vol = actual_voltage;
@@ -159,8 +158,6 @@ int main(void)
       }
       if ((actual_voltage < metal_detect_thresh) && ((without_calibration_done) && (with_calibration_done)))
       {
-        Configuration_Init();
-        ALARM;
         break;
       }
       else
@@ -169,18 +166,36 @@ int main(void)
         paused = true;
       }
     }
+    Configuration_Init();
+    ALARM;
     while (1)
     {
-      break;
+      // break;
       if (paused)
       {
-        if (!((__NVIC_GetEnableIRQ(EXTI0_IRQn)) | (__NVIC_GetEnableIRQ(EXTI1_IRQn)) | (__NVIC_GetEnableIRQ(EXTI2_IRQn)) | (__NVIC_GetEnableIRQ(EXTI3_IRQn))))// (interrupt_times == 4)
+        if (overtime)
+        {
+          __NVIC_DisableIRQ(EXTI0_IRQn);
+          __NVIC_DisableIRQ(EXTI1_IRQn);
+          __NVIC_DisableIRQ(EXTI2_IRQn);
+          __NVIC_DisableIRQ(EXTI3_IRQn);
+          __NVIC_DisableIRQ(TIM5_IRQn);
+          paused = false;
+          overtime = false;
+          break;
+        }
+        else if ((!((__NVIC_GetEnableIRQ(EXTI0_IRQn)) | (__NVIC_GetEnableIRQ(EXTI1_IRQn)) | (__NVIC_GetEnableIRQ(EXTI2_IRQn)) | (__NVIC_GetEnableIRQ(EXTI3_IRQn)))))// (interrupt_times == 4)
         {
           __NVIC_DisableIRQ(TIM5_IRQn);
+          paused = false;
           Quadrant_Lattice_Indexing();
           break;
         }
-        paused = false;
+      }
+      else
+      {
+        HAL_TIM_Base_Stop_IT(&htim5);
+        break;
       }
     }
   }
@@ -321,14 +336,16 @@ static void Quadrant_Lattice_Indexing(void)
 
 void Configuration_Init(void)
 {
-  HAL_TIM_Base_Stop(&htim5);
+  HAL_TIM_Base_Stop_IT(&htim5);
   __HAL_TIM_SetCounter(&htim5, 0);
   memset(quadrant_time_stamp, 0x00000000, sizeof(uint32_t) * 4);
   __NVIC_EnableIRQ(EXTI0_IRQn);
   __NVIC_EnableIRQ(EXTI1_IRQn);
   __NVIC_EnableIRQ(EXTI2_IRQn);
   __NVIC_EnableIRQ(EXTI3_IRQn);
+  __NVIC_EnableIRQ(TIM5_IRQn);
   htim5.State = HAL_TIM_STATE_BUSY;
+  __HAL_TIM_ENABLE_IT(&htim5, TIM_IT_UPDATE);
   __HAL_TIM_ENABLE(&htim5);
 }
 /* USER CODE END 4 */

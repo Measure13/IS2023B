@@ -43,6 +43,7 @@ void MX_ADC1_Init(void);
 /* USER CODE BEGIN Prototypes */
 float ADC_Get_Vpp(uint16_t* data);
 void ADC_Get_Values(uint32_t sample_rate);
+float ADC_Get_Vpp_Median(uint16_t sample_times);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

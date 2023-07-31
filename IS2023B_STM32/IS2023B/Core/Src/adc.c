@@ -175,61 +175,61 @@ void ADC_Get_Values(uint32_t sample_rate)
 // 	return (a > b) ? a : b;
 // }
 
-// static inline uint32_t min_u32(uint32_t a, uint32_t b)
-// {
-// 	return (a > b) ? b : a;
-// }
+static inline uint32_t min_u32(uint32_t a, uint32_t b)
+{
+	return (a > b) ? b : a;
+}
 
-// static void merge_sort(float* p, uint32_t len, bool ascending)
-// {
-//     uint32_t left = 0, right = 0, left_limit, right_limit, i, room_len;
-//     for (uint32_t window = 1; window < len; window <<= 1)
-//     {
-//         for (uint32_t offset = 0; offset < len; offset += (window << 1))
-//         {
-//             left_limit = offset + window - 1;
-//             if (left_limit >= len)
-//             {
-//                 break;
-//             }
-//             right_limit = min_u32(left_limit + window, len - 1);
-//             left = offset;
-//             right = left_limit + 1;
-//             room_len = right_limit - offset + 1;
-//             float* room = (float*)malloc(sizeof(float) * room_len);
-//             i = 0;
-//             while (left <= left_limit && right <= right_limit)
-//             {
-//                 room[i++] = ((p[left] <= p[right]) == ascending) ? p[left++] : p[right++];
-//             }
-//             while (left <= left_limit)
-//             {
-//                 room[i++] = p[left++];
-//             }
-//             while (right <= right_limit)
-//             {
-//                 room[i++] = p[right++];
-//             }
-//             for (uint32_t j = 0; j < room_len; ++j)
-//             {
-//                 p[j + offset] = room[j];
-//             }
-//             free(room);
-//         }
-//     }
-// }
-// static float Get_Median(float* p, uint32_t len)
-// {
-// 	merge_sort(p, len, true);
-// 	if (len % 2)
-// 	{
-// 		return p[len / 2];
-// 	}
-// 	else
-// 	{
-// 		return (p[len / 2 - 1] + p[len / 2]) / 2;
-// 	}
-// }
+static void merge_sort(float* p, uint32_t len, bool ascending)
+{
+    uint32_t left = 0, right = 0, left_limit, right_limit, i, room_len;
+    for (uint32_t window = 1; window < len; window <<= 1)
+    {
+        for (uint32_t offset = 0; offset < len; offset += (window << 1))
+        {
+            left_limit = offset + window - 1;
+            if (left_limit >= len)
+            {
+                break;
+            }
+            right_limit = min_u32(left_limit + window, len - 1);
+            left = offset;
+            right = left_limit + 1;
+            room_len = right_limit - offset + 1;
+            float* room = (float*)malloc(sizeof(float) * room_len);
+            i = 0;
+            while (left <= left_limit && right <= right_limit)
+            {
+                room[i++] = ((p[left] <= p[right]) == ascending) ? p[left++] : p[right++];
+            }
+            while (left <= left_limit)
+            {
+                room[i++] = p[left++];
+            }
+            while (right <= right_limit)
+            {
+                room[i++] = p[right++];
+            }
+            for (uint32_t j = 0; j < room_len; ++j)
+            {
+                p[j + offset] = room[j];
+            }
+            free(room);
+        }
+    }
+}
+static float Get_Median(float* p, uint32_t len)
+{
+	merge_sort(p, len, true);
+	if (len % 2)
+	{
+		return p[len / 2];
+	}
+	else
+	{
+		return (p[len / 2 - 1] + p[len / 2]) / 2;
+	}
+}
 
 float ADC_Get_Vpp(uint16_t* data)
 {
@@ -240,5 +240,19 @@ float ADC_Get_Vpp(uint16_t* data)
       else if(data[i] < min) {min = data[i];}//min_index = i;
   }
   return (float)(max - min) / 4096.0f * 3.3f;
+}
+
+float ADC_Get_Vpp_Median(uint16_t sample_times)
+{
+  float* adc_v_p = (float*)malloc(sizeof(float) * sample_times);
+  float temp = 0.0f;
+  for (uint16_t i = 0; i < sample_times; ++i)
+  {
+    ADC_Get_Values(ADC_SAMPLE_RATE);
+    adc_v_p[i] = ADC_Get_Vpp(adc_values + 4);
+  }
+  temp = Get_Median(adc_v_p, sample_times);
+  free(adc_v_p);
+  return temp;
 }
 /* USER CODE END 1 */
