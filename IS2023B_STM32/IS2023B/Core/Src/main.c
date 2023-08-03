@@ -156,7 +156,14 @@ int main(void)
       }
       if ((actual_voltage < metal_detect_thresh) && ((without_calibration_done) && (with_calibration_done)))
       {
-        break;
+        if (actual_voltage < 0.05f)
+        {
+          /* No supply */
+        }
+        else
+        {
+          break;
+        }
       }
       else
       {

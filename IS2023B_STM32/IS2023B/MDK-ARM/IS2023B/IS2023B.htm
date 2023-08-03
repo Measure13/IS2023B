@@ -3,7 +3,7 @@
 <title>Static Call Graph - [IS2023B\IS2023B.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image IS2023B\IS2023B.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060960: Last Updated: Mon Jul 31 17:26:15 2023
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060960: Last Updated: Mon Jul 31 19:17:48 2023
 <BR><P>
 <H3>Maximum Stack Usage =        200 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -1193,9 +1193,9 @@ Global Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 120<LI>Call Chain = UARTHMI_Cross_Page_Set_Number &rArr; USART_Send_Data_Direct &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[cc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART_Send_Data_Direct
+<LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
 <LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strlen
 <LI><a href="#[82]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
-<LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
 </UL>
 <BR>[Called By]<UL><LI><a href="#[5b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 <LI><a href="#[d6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Quadrant_Lattice_Indexing
@@ -1225,10 +1225,10 @@ Global Symbols
 <BR><BR>[Calls]<UL><LI><a href="#[cc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART_Send_Data_Direct
 <LI><a href="#[e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UARTHMI_Get_Integer_Digits
 <LI><a href="#[db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UARTHMI_Append_Ending
-<LI><a href="#[69]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr
 <LI><a href="#[74]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;malloc
 <LI><a href="#[77]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;free
 <LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
+<LI><a href="#[69]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr
 </UL>
 
 <P><STRONG><a name="[cd]"></a>UART_RX_Data_Parse</STRONG> (Thumb, 60 bytes, Stack size 0 bytes, usart.o(i.UART_RX_Data_Parse))
@@ -1416,7 +1416,7 @@ Global Symbols
 <LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UARTHMI_Set_Number
 </UL>
 
-<P><STRONG><a name="[5b]"></a>main</STRONG> (Thumb, 434 bytes, Stack size 8 bytes, main.o(i.main))
+<P><STRONG><a name="[5b]"></a>main</STRONG> (Thumb, 444 bytes, Stack size 8 bytes, main.o(i.main))
 <BR><BR>[Stack]<UL><LI>Max Depth = 200<LI>Call Chain = main &rArr; Quadrant_Lattice_Indexing &rArr; Gradient_descent_wrapper &rArr; Gradient_descent &rArr; dist &rArr; __hardfp_sqrtf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[d5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_USART1_UART_Init
